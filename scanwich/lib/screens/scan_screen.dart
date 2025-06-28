@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
+
 
 class ScanScreen extends StatefulWidget {
   const ScanScreen({super.key});
@@ -14,45 +16,66 @@ class _ScanScreenState extends State<ScanScreen> {
   String ingredients = '';
   String error = '';
   bool isLoading = false;
+  List<String> matchedAllergens = [];
 
-  Future<void> fetchProduct() async {
-    setState(() {
-      isLoading = true;
-      error = '';
-      productName = '';
-      ingredients = '';
-    });
+  Future<List<String>> _loadUserAllergens() async {
+  final prefs = await SharedPreferences.getInstance();
+  return prefs.getStringList('user_allergies') ?? [];
+}
 
-    const String testBarcode = '016000127319 '; // Skippy Peanut Butter
-    final url = Uri.parse(
-        'https://world.openfoodfacts.org/api/v0/product/$testBarcode.json');
 
-    try {
-      final response = await http.get(url);
+Future<void> fetchProduct() async {
+  setState(() {
+    isLoading = true;
+    error = '';
+    productName = '';
+    ingredients = '';
+    matchedAllergens = []; // ← new variable
+  });
 
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        final product = data['product'];
+  const String testBarcode = '51500241776';
+  final url = Uri.parse(
+    'https://world.openfoodfacts.org/api/v0/product/$testBarcode.json'
+  );
 
-        setState(() {
-          productName = product['product_name'] ?? 'Unknown Product';
-          ingredients = product['ingredients_text'] ?? 'No ingredients listed.';
-        });
-      } else {
-        setState(() {
-          error = 'Failed to load product data.';
-        });
-      }
-    } catch (e) {
+  try {
+    final response = await http.get(url);
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      final product = data['product'];
+
+      final name = product['product_name'] ?? 'Unknown Product';
+      final ingText = product['ingredients_text']?.toLowerCase() ?? '';
+
+      // Load user allergens
+      final userAllergens = await _loadUserAllergens();
+
+      // Match against ingredients
+      final found = userAllergens.where((allergen) =>
+        ingText.contains(allergen.toLowerCase())).toList();
+
       setState(() {
-        error = 'An error occurred: $e';
+        productName = name;
+        ingredients = ingText;
+        matchedAllergens = found;
       });
-    } finally {
+
+    } else {
       setState(() {
-        isLoading = false;
+        error = 'Failed to load product data.';
       });
     }
+  } catch (e) {
+    setState(() {
+      error = 'An error occurred: $e';
+    });
+  } finally {
+    setState(() {
+      isLoading = false;
+    });
   }
+}
 
   @override
   Widget build(BuildContext context) {
@@ -114,6 +137,29 @@ class _ScanScreenState extends State<ScanScreen> {
                       ),
                       const SizedBox(height: 4),
                       Text(ingredients),
+                      if (matchedAllergens.isNotEmpty) ...[
+  const SizedBox(height: 20),
+  Text(
+    '⚠️ Allergens Found:',
+    style: TextStyle(
+      color: Colors.red[700],
+      fontWeight: FontWeight.bold,
+      fontSize: 16,
+    ),
+  ),
+  const SizedBox(height: 8),
+  Wrap(
+    spacing: 8,
+    children: matchedAllergens.map((allergen) {
+      return Chip(
+        label: Text(allergen),
+        backgroundColor: Colors.red[100],
+        labelStyle: const TextStyle(color: Colors.red),
+      );
+    }).toList(),
+  ),
+],
+
                     ],
                   )
               ],
