@@ -19,6 +19,7 @@ class ScanwichApp extends StatelessWidget {
           seedColor: Colors.teal,
           brightness: Brightness.light,
         ),
+        fontFamily: 'Poppins',
         useMaterial3: true,
         appBarTheme: const AppBarTheme(
           backgroundColor: Colors.teal,
