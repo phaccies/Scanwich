@@ -114,6 +114,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Your Allergy Profile'),
+        backgroundColor: const Color(FFE45E),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -149,7 +150,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 backgroundColor: Theme.of(context).colorScheme.primary,
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(50),
                 ),
               ),
             ),
