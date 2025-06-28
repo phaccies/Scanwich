@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'profile_screen.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key, required this.title});
@@ -8,55 +9,80 @@ class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        title: Text(title),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: <Widget>[
-              Icon(
-                Icons.fastfood_outlined,
-                size: 100,
-                color: Theme.of(context).colorScheme.primary,
-              ),
-              const SizedBox(height: 20),
-              const Text(
-                'Welcome to Scanwich!',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
+      backgroundColor: const Color(0xFF7FC8F8), // Light Sky Blue
+      body: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          // Stacked "Scanwich" text
+          SizedBox(
+            height: 160, // enough room for all layers
+            child: Stack(
+              alignment: Alignment.center,
+              children: const [
+                // White (back)
+                Positioned(
+                  top: 0,
+                  child: Text(
+                    'Scanwich',
+                    style: TextStyle(
+                      fontFamily: 'Caprasimo',
+                      fontSize: 48,
+                      fontWeight: FontWeight.w400,
+                      color: Color(0xFFF9F9F9), // White
+                    ),
+                  ),
                 ),
-              ),
-              const SizedBox(height: 10),
-              const Text(
-                'Scan ingredients, stay safe.',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.black54,
+                // Yellow (middle)
+                Positioned(
+                  top: 25,
+                  child: Text(
+                    'Scanwich',
+                    style: TextStyle(
+                      fontFamily: 'Caprasimo',
+                      fontSize: 48,
+                      fontWeight: FontWeight.w400,
+                      color: Color( 0xFFEE4266), // Red
+                    ),
+                  ),
                 ),
-              ),
-              const SizedBox(height: 50),
-              ElevatedButton.icon(
-                icon: const Icon(Icons.camera_alt_outlined),
-                onPressed: () => Navigator.pushNamed(context, '/scan'),
-                label: const Text('Scan Product'),
-              ),
-              const SizedBox(height: 20),
-              ElevatedButton.icon(
-                icon: const Icon(Icons.person_outline),
-                onPressed: () => Navigator.pushNamed(context, '/profile'),
-                label: const Text('Set Allergies'),
-              ),
-            ],
+                // Red (front)
+                Positioned(
+                  top: 50,
+                  child: Text(
+                    'Scanwich',
+                    style: TextStyle(
+                      fontFamily: 'Caprasimo',
+                      fontSize: 48,
+                      fontWeight: FontWeight.w400,
+                      color: Color(0xFFFFE45E), // Yellow
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
-        ),
+
+          const SizedBox(height: 80),
+
+          // "Get Started!" Button
+          ElevatedButton(
+            onPressed: () {
+              Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const ProfileScreen()),
+            );
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.black,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            child: const Text('Get Started!'),
+          ),
+        ],
       ),
     );
   }
