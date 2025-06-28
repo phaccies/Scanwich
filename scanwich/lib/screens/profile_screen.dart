@@ -112,99 +112,147 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Your Allergy Profile'),
-        backgroundColor: const Color(FFE45E),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            const Text(
-              'Select your allergies from the list below.',
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
-            ),
-            const SizedBox(height: 20),
-
-            TextField(
-              controller: _searchController,
-              decoration: const InputDecoration(
-                border: OutlineInputBorder(),
-                labelText: 'Search Allergens',
-                prefixIcon: Icon(Icons.search),
-              ),
-            ),
-
-            const SizedBox(height: 12),
-
-            TextButton.icon(
-              onPressed: _showAddCustomAllergenDialog,
-              icon: const Icon(Icons.add, color: Colors.white),
-              label: const Text(
-                'Add Custom Allergen',
-                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-              ),
-              style: TextButton.styleFrom(
-                backgroundColor: Theme.of(context).colorScheme.primary,
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(50),
+      backgroundColor: const Color(0xFF7FC8F8),
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.5),
+                  borderRadius: BorderRadius.circular(30),
+                ),
+                child: Column(
+                  children: [
+                    const Text(
+                      'Your Allergy Profile',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.w800,
+                        color: Color(0xFF003366), // dark blue
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    const Text(
+                      'Select your allergies from the list below.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.w400),
+                    ),
+                    const SizedBox(height: 16),
+                    TextField(
+                      controller: _searchController,
+                      decoration: const InputDecoration(
+                        border: OutlineInputBorder(),
+                        labelText: 'Search Allergens',
+                        prefixIcon: Icon(Icons.search),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    TextButton.icon(
+                      onPressed: _showAddCustomAllergenDialog,
+                      icon: const Icon(Icons.add, color: Colors.black),
+                      label: const Text(
+                        'Add Custom Allergen',
+                        style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+                      ),
+                      style: TextButton.styleFrom(
+                        backgroundColor: const Color(0xFFF9F9F9),
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(50),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-            ),
+              const SizedBox(height: 20),
 
-            const SizedBox(height: 20),
-
-            if (_selectedAllergens.isNotEmpty) ...[
-              const Text(
-                'Your Selections:',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 8),
-              Wrap(
-                spacing: 8.0,
-                runSpacing: 4.0,
-                children: _selectedAllergens.map((allergen) {
-                  return Chip(
-                    label: Text(allergen),
-                    onDeleted: () => _onAllergenSelected(false, allergen),
-                    deleteIconColor: Theme.of(context).colorScheme.primary,
-                  );
-                }).toList(),
-              ),
-              const Divider(height: 30),
-            ],
-
-            Expanded(
-              child: SingleChildScrollView(
-                child: Wrap(
+              if (_selectedAllergens.isNotEmpty) ...[
+                const Text(
+                  'Your Selections:',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 8),
+                Wrap(
                   spacing: 8.0,
                   runSpacing: 4.0,
+                  children: _selectedAllergens.map((allergen) {
+                    return Chip(
+                      label: Text(allergen),
+                      onDeleted: () => _onAllergenSelected(false, allergen),
+                      deleteIconColor: Theme.of(context).colorScheme.primary,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(50),
+                      ),
+                    );
+                  }).toList(),
+                ),
+                const SizedBox(height: 20),
+              ],
+
+              Expanded(
+                child: GridView.count(
+                  crossAxisCount: 2,
+                  crossAxisSpacing: 12,
+                  mainAxisSpacing: 12,
+                  childAspectRatio: 2.8,
                   children: _filteredAllergens
                       .where((a) => !_selectedAllergens.contains(a))
-                      .map((a) => FilterChip(
-                            label: Text(a),
-                            selected: _selectedAllergens.contains(a),
-                            onSelected: (val) => _onAllergenSelected(val, a),
-                            selectedColor: Theme.of(context)
-                                .colorScheme
-                                .primary
-                                .withOpacity(0.3),
-                            checkmarkColor: Theme.of(context).colorScheme.primary,
+                      .map((a) => GestureDetector(
+                            onTap: () => _onAllergenSelected(true, a),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Container(
+                                  width: 80,
+                                  height: 80,
+                                  decoration: const BoxDecoration(
+                                    color: Colors.white,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  alignment: Alignment.center,
+                                  child: Text(
+                                    a.characters.first.toUpperCase(),
+                                    style: const TextStyle(
+                                      fontSize: 28,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  a,
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ))
                       .toList(),
                 ),
               ),
-            ),
 
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: _saveAllergies,
-              child: const Text('Save Profile'),
-            ),
-          ],
+              const SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: _saveAllergies,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFF9F9F9),
+                  foregroundColor: Colors.black,
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                child: const Text('Save Profile'),
+              ),
+            ],
+          ),
         ),
       ),
     );
