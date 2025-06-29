@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'home_screen.dart'; // Make sure HomePage is defined in this file
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -112,31 +113,48 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF7FC8F8),
+      backgroundColor: const Color(0xFFF9F9F9),
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(0.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.5),
-                  borderRadius: const BorderRadius.only(
+        top: false, // ✅ Remove top padding
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Container(
+              decoration: const BoxDecoration(
+                color: Color(0xFF7FC8F8), // Light sky blue
+                borderRadius: BorderRadius.only(
                   bottomLeft: Radius.circular(40),
                   bottomRight: Radius.circular(40),
                 ),
-                ),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
                 child: Column(
                   children: [
+                    Align(
+                      alignment: Alignment.topLeft,
+                      child: IconButton(
+                        icon: const Icon(Icons.arrow_back),
+                        color: Colors.black,
+                        iconSize: 28,
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const HomePage(title: 'Scanwich'),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                    const SizedBox(height: 8),
                     const Text(
                       'Your Allergy Profile',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.w800,
-                        color: Color(0xFF003366), // dark blue
+                        color: Color(0xFF003366),
                       ),
                     ),
                     const SizedBox(height: 12),
@@ -148,10 +166,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     const SizedBox(height: 16),
                     TextField(
                       controller: _searchController,
-                      decoration: const InputDecoration(
-                        border: OutlineInputBorder(),
+                      decoration: InputDecoration(
+                        filled: true,
+                        fillColor: Colors.white,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8.0),
+                          borderSide: BorderSide.none,
+                        ),
                         labelText: 'Search Allergens',
-                        prefixIcon: Icon(Icons.search),
+                        prefixIcon: const Icon(Icons.search),
                       ),
                     ),
                     const SizedBox(height: 16),
@@ -173,54 +196,73 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ],
                 ),
               ),
+            ),
+            const SizedBox(height: 20),
+            if (_selectedAllergens.isNotEmpty) ...[
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Your Selections:',
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 8.0,
+                      runSpacing: 4.0,
+                      children: _selectedAllergens.map((allergen) {
+                        return Chip(
+                          label: Text(allergen),
+                          onDeleted: () => _onAllergenSelected(false, allergen),
+                          deleteIconColor: Theme.of(context).colorScheme.primary,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(50),
+                            side: const BorderSide(
+                              color: Colors.pink, // ✅ Pink border
+                              width: 2,
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                  ],
+                ),
+              ),
               const SizedBox(height: 20),
-
-              if (_selectedAllergens.isNotEmpty) ...[
-                const Text(
-                  'Your Selections:',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 8),
-                Wrap(
-                  spacing: 8.0,
-                  runSpacing: 4.0,
-                  children: _selectedAllergens.map((allergen) {
-                    return Chip(
-                      label: Text(allergen),
-                      onDeleted: () => _onAllergenSelected(false, allergen),
-                      deleteIconColor: Theme.of(context).colorScheme.primary,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(50),
-                      ),
-                    );
-                  }).toList(),
-                ),
-                const SizedBox(height: 20),
-              ],
-
-              Expanded(
-                child: GridView.count(
-                  crossAxisCount: 2,
-                  crossAxisSpacing: 12,
-                  mainAxisSpacing: 12,
-                  childAspectRatio: 2.8,
+            ],
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: Wrap(
+                  spacing: 16.0,
+                  runSpacing: 16.0,
+                  alignment: WrapAlignment.center,
                   children: _filteredAllergens
                       .where((a) => !_selectedAllergens.contains(a))
-                      .map((a) => GestureDetector(
-                            onTap: () => _onAllergenSelected(true, a),
+                      .map(
+                        (allergen) => GestureDetector(
+                          onTap: () => _onAllergenSelected(true, allergen),
+                          child: SizedBox(
+                            width: MediaQuery.of(context).size.width / 2 - 24,
                             child: Column(
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 Container(
                                   width: 80,
                                   height: 80,
-                                  decoration: const BoxDecoration(
+                                  decoration: BoxDecoration(
                                     color: Colors.white,
                                     shape: BoxShape.circle,
+                                    border: Border.all(
+                                      color: Colors.yellow, // ✅ Yellow border
+                                      width: 2,
+                                    ),
                                   ),
                                   alignment: Alignment.center,
                                   child: Text(
-                                    a.characters.first.toUpperCase(),
+                                    allergen.characters.first.toUpperCase(),
                                     style: const TextStyle(
                                       fontSize: 28,
                                       fontWeight: FontWeight.bold,
@@ -229,43 +271,43 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
-                                  a,
-                                  style: const TextStyle(
-                                    fontSize: 14,
-                                  ),
+                                  allergen,
+                                  textAlign: TextAlign.center,
+                                  style: const TextStyle(fontSize: 14),
                                 ),
                               ],
                             ),
-                          ))
+                          ),
+                        ),
+                      )
                       .toList(),
                 ),
               ),
-
-              const SizedBox(height: 20),
-              Align(
-                alignment: Alignment.center,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 8.0),
-                  child: ElevatedButton(
-                    onPressed: _saveAllergies,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFF9F9F9),
-                      foregroundColor: Colors.black,
-                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(50),
-                      ),
-                      minimumSize: const Size(180, 45), // Width x Height
+            ),
+            const SizedBox(height: 20),
+            Align(
+              alignment: Alignment.center,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 8.0),
+                child: ElevatedButton(
+                  onPressed: _saveAllergies,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF7FC8F8),
+                    foregroundColor: Colors.black,
+                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(50),
                     ),
-                    child: const Text(
-                      'Save Profile',
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
+                    minimumSize: const Size(180, 45),
+                  ),
+                  child: const Text(
+                    'Save Profile',
+                    style: TextStyle(fontWeight: FontWeight.bold),
                   ),
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
