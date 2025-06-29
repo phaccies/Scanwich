@@ -2,6 +2,8 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter/material.dart';
+import 'package:mobile_scanner/mobile_scanner.dart';
 
 
 class ScanScreen extends StatefulWidget {
@@ -23,6 +25,56 @@ class _ScanScreenState extends State<ScanScreen> {
   return prefs.getStringList('user_allergies') ?? [];
 }
 
+
+// added here 4 scanning
+Future<void> fetchProductWithBarcode(String barcode) async {
+  setState(() {
+    isLoading = true;
+    error = '';
+    productName = '';
+    ingredients = '';
+    matchedAllergens = [];
+  });
+
+  final url = Uri.parse(
+    'https://world.openfoodfacts.org/api/v0/product/$barcode.json',
+  );
+
+  try {
+    final response = await http.get(url);
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      final product = data['product'];
+      final name = product['product_name'] ?? 'Unknown Product';
+      final ingText = product['ingredients_text']?.toLowerCase() ?? '';
+
+      final userAllergens = await _loadUserAllergens();
+      final found = userAllergens
+          .where((allergen) => ingText.contains(allergen.toLowerCase()))
+          .toList();
+
+      setState(() {
+        productName = name;
+        ingredients = ingText;
+        matchedAllergens = found;
+      });
+    } else {
+      setState(() {
+        error = 'Failed to load product data.';
+      });
+    }
+  } catch (e) {
+    setState(() {
+      error = 'An error occurred: $e';
+    });
+  } finally {
+    setState(() {
+      isLoading = false;
+    });
+  }
+}
+//end 
 
 Future<void> fetchProduct() async {
   setState(() {
@@ -110,9 +162,21 @@ Future<void> fetchProduct() async {
                 ),
                 const SizedBox(height: 20),
                 ElevatedButton(
-                  onPressed: fetchProduct,
-                  child: const Text('Test API Call'),
+                  onPressed: () async {
+                    final barcode = await Navigator.push<String>(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const BarcodeScannerScreen(),
+                      ),
+                    );
+
+                    if (barcode != null) {
+                      fetchProductWithBarcode(barcode);
+                    }
+                  },
+                  child: const Text('Scan Barcode'),
                 ),
+
                 const SizedBox(height: 20),
                 if (isLoading) const CircularProgressIndicator(),
                 if (error.isNotEmpty)
@@ -167,6 +231,28 @@ Future<void> fetchProduct() async {
           ),
         ),
       ),
+    );
+  }
+} //end of _scanscreenclass
+
+class BarcodeScannerScreen extends StatelessWidget {
+  const BarcodeScannerScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Scan Barcode')),
+body: MobileScanner(
+  onDetect: (BarcodeCapture capture) {
+    final List<Barcode> barcodes = capture.barcodes;
+    if (barcodes.isNotEmpty) {
+      final String? code = barcodes.first.rawValue;
+      if (code != null) {
+        Navigator.pop(context, code);
+      }
+    }
+  },
+),
     );
   }
 }
